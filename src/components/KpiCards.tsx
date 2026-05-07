@@ -63,8 +63,9 @@ export function KpiCards({ kpi }: KpiCardsProps) {
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <KpiCard title="Total record SA" value={formatInteger(kpi.totalRecords)} icon={<Sigma className="h-5 w-5" />} />
       <KpiCard
-        title="Perusahaan/lokasi unik"
+        title="Perusahaan + lokasi unik"
         value={formatInteger(kpi.uniqueEstablishments)}
+        hint="Nama perusahaan dan lokasi yang sama dihitung satu unit"
         icon={<Building2 className="h-5 w-5" />}
         tone="blue"
       />

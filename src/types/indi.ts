@@ -78,8 +78,6 @@ export interface ParsedWorkbook {
   summary: WorkbookSummary;
 }
 
-export type AnomalyFilter = "all" | "valid" | "issues";
-
 export interface DashboardFilters {
   year: string;
   classification: string;
@@ -90,7 +88,6 @@ export interface DashboardFilters {
   kbli: string;
   company: string;
   location: string;
-  anomalyStatus: AnomalyFilter;
 }
 
 export interface KpiMetrics {
@@ -134,7 +131,7 @@ export interface AggregateResult {
   sourceRecords: ParsedAssessment[];
   scoreRecords: ParsedAssessment[];
   kpi: KpiMetrics;
-  yearCounts: Array<{ year: number; valid: number; anomaly: number; total: number }>;
+  yearCounts: Array<{ year: number | string; valid: number; anomaly: number; total: number }>;
   yearlyAverage: Array<{ year: number; average: number | null; count: number }>;
   scoreDistribution: ChartDatum[];
   maturityComposition: ChartDatum[];

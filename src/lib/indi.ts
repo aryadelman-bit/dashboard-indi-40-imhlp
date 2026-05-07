@@ -21,8 +21,7 @@ export const DEFAULT_FILTERS: DashboardFilters = {
   weakestPillar: "all",
   kbli: "",
   company: "",
-  location: "",
-  anomalyStatus: "all"
+  location: ""
 };
 
 export function normalizeInternalKeyPart(value: unknown) {
@@ -236,9 +235,6 @@ export function applyDashboardFilters(records: ParsedAssessment[], filters: Dash
       return false;
     }
 
-    if (filters.anomalyStatus === "valid" && record.anomalyFlags.length > 0) return false;
-    if (filters.anomalyStatus === "issues" && record.anomalyFlags.length === 0) return false;
-
     return true;
   });
 }
@@ -341,12 +337,24 @@ export function calculateAggregates(
     : sourceRecords.filter((record) => !isAggregationAnomaly(record));
   const scoreValues = toScoreValues(scoreRecords);
   const years = groupRecordsByYear(sourceRecords);
+  const yearCountSource = includeAnomalies ? sourceRecords : scoreRecords;
 
-  const yearCounts = years.map((year) => {
-    const records = sourceRecords.filter((record) => record.year === year);
-    const anomaly = records.filter(isAggregationAnomaly).length;
-    return { year, valid: records.length - anomaly, anomaly, total: records.length };
-  });
+  const yearCounts: Array<{ year: number | string; valid: number; anomaly: number; total: number }> = years
+    .map((year) => {
+      const records = yearCountSource.filter((record) => record.year === year);
+      const anomaly = includeAnomalies ? records.filter(isAggregationAnomaly).length : 0;
+      return { year, valid: records.length - anomaly, anomaly, total: records.length };
+    })
+    .filter((row) => row.total > 0);
+  const invalidYearRecords = includeAnomalies ? sourceRecords.filter((record) => record.year === null) : [];
+  if (invalidYearRecords.length > 0) {
+    yearCounts.push({
+      year: "Tahun invalid",
+      valid: invalidYearRecords.filter((record) => !isAggregationAnomaly(record)).length,
+      anomaly: invalidYearRecords.filter(isAggregationAnomaly).length,
+      total: invalidYearRecords.length
+    });
+  }
 
   const yearlyAverage = groupRecordsByYear(scoreRecords).map((year) => {
     const records = scoreRecords.filter((record) => record.year === year);

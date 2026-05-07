@@ -116,6 +116,7 @@ function YearlyAverageTooltip({
 
 export function DashboardCharts({ aggregate }: { aggregate: AggregateResult }) {
   const hasRecords = aggregate.sourceRecords.length > 0;
+  const showYearAnomalyBar = aggregate.yearCounts.some((item) => item.anomaly > 0);
   const fieldData = aggregate.fieldAverages.map((item) => ({
     name: item.name,
     value: item.value ?? 0,
@@ -141,7 +142,9 @@ export function DashboardCharts({ aggregate }: { aggregate: AggregateResult }) {
                 <Tooltip formatter={(value) => formatInteger(Number(value))} />
                 <Legend />
                 <Bar dataKey="valid" name="Valid agregasi" stackId="a" fill="#2563eb" />
-                <Bar dataKey="anomaly" name="Anomali Data" stackId="a" fill="#dc2626" />
+                {showYearAnomalyBar ? (
+                  <Bar dataKey="anomaly" name="Anomali agregasi" stackId="a" fill="#dc2626" />
+                ) : null}
               </BarChart>
             </ResponsiveContainer>
           </div>

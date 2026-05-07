@@ -170,20 +170,7 @@ export function FiltersPanel({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-2 md:w-72">
-            <Label>Status anomali</Label>
-            <Select value={filters.anomalyStatus} onValueChange={(value) => update("anomalyStatus", value as DashboardFilters["anomalyStatus"])}>
-              <SelectTrigger>
-                <SelectValue placeholder="Semua data" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua</SelectItem>
-                <SelectItem value="valid">Valid saja</SelectItem>
-                <SelectItem value="issues">Anomali saja</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex justify-end">
           <Button type="button" variant="outline" onClick={() => onFiltersChange(DEFAULT_FILTERS)}>
             <RotateCcw className="h-4 w-4" />
             Reset filter
