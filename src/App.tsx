@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, Database, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Database, FileSpreadsheet, Loader2 } from "lucide-react";
 import { DashboardCharts } from "@/components/DashboardCharts";
 import { FiltersPanel } from "@/components/FiltersPanel";
 import { InsightPanel } from "@/components/InsightPanel";
@@ -18,8 +18,7 @@ import {
   loadKbliClassificationEdits,
   saveKbliClassificationEdits
 } from "@/lib/kbliEdits";
-import { formatInteger } from "@/lib/utils";
-import type { DashboardFilters, KbliClassificationEdit, ParsedWorkbook, WorkbookSummary } from "@/types/indi";
+import type { DashboardFilters, KbliClassificationEdit, ParsedWorkbook } from "@/types/indi";
 
 const DATASET_FILE_NAME = "indi_makanan_minuman_20260507_110017.xlsx";
 declare global {
@@ -101,20 +100,17 @@ export default function App() {
     <div className="min-h-screen bg-slate-50">
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-          <div className="grid gap-5 lg:grid-cols-[1fr_460px] lg:items-end">
-            <div className="space-y-3">
-              <Badge variant="blue">INDI 4.0 Self Assessment</Badge>
-              <div className="space-y-2">
-                <h1 className="max-w-5xl text-2xl font-semibold tracking-normal text-slate-950 md:text-3xl">
-                  Dashboard Monitoring Self Assessment INDI 4.0 Industri Makanan, Hasil Laut dan Perikanan
-                </h1>
-                <p className="max-w-4xl text-sm leading-6 text-muted-foreground md:text-base">
-                  Monitoring agregat skor INDI 4.0, sebaran perusahaan, klasifikasi KBLI, anomali data, serta
-                  kekuatan dan kelemahan pilar transformasi industri 4.0.
-                </p>
-              </div>
+          <div className="space-y-3">
+            <Badge variant="blue">INDI 4.0 Self Assessment</Badge>
+            <div className="space-y-2">
+              <h1 className="max-w-5xl text-2xl font-semibold tracking-normal text-slate-950 md:text-3xl">
+                Dashboard Monitoring Self Assessment INDI 4.0 Industri Makanan, Hasil Laut dan Perikanan
+              </h1>
+              <p className="max-w-4xl text-sm leading-6 text-muted-foreground md:text-base">
+                Monitoring agregat skor INDI 4.0, sebaran perusahaan, klasifikasi KBLI, anomali data, serta
+                kekuatan dan kelemahan pilar transformasi industri 4.0.
+              </p>
             </div>
-            <DataSourceCard summary={workbook?.summary ?? null} status={loadStatus} error={loadError} />
           </div>
         </div>
       </header>
@@ -167,63 +163,6 @@ export default function App() {
         )}
       </main>
     </div>
-  );
-}
-
-function DataSourceCard({
-  summary,
-  status,
-  error
-}: {
-  summary: WorkbookSummary | null;
-  status: "loading" | "ready" | "error";
-  error: string;
-}) {
-  return (
-    <Card className="border-blue-100 bg-white/95 shadow-soft">
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-            {status === "loading" ? (
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            ) : status === "error" ? (
-              <AlertCircle className="h-4 w-4 text-red-600" />
-            ) : (
-              <CheckCircle2 className="h-4 w-4 text-emerald-700" />
-            )}
-            Sumber data Excel otomatis
-          </div>
-          <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-            <Badge variant={status === "error" ? "red" : "blue"}>{DATASET_FILE_NAME}</Badge>
-            {summary ? (
-              <>
-                <Badge variant="outline">Sheet: {summary.sheetNames.join(", ")}</Badge>
-                <Badge variant="secondary">{formatInteger(summary.totalDataRows)} baris</Badge>
-                <Badge variant="secondary">{formatInteger(summary.dataColumnCount)} kolom Data</Badge>
-                <Badge variant="green">{formatInteger(summary.validRows)} valid agregasi</Badge>
-                <Badge variant={summary.anomalyRows > 0 ? "red" : "secondary"}>
-                  {formatInteger(summary.anomalyRows)} anomali data
-                </Badge>
-                <Badge variant="outline">
-                  Tahun {summary.years.length ? `${summary.years[0]}-${summary.years.at(-1)}` : "-"}
-                </Badge>
-                <Badge variant="outline">{formatInteger(summary.kbliReferenceCount)} KBLI IMHLP</Badge>
-              </>
-            ) : status === "loading" ? (
-              <span>Membaca file dari folder aplikasi...</span>
-            ) : (
-              <span>{error}</span>
-            )}
-          </div>
-          {summary?.warnings.length ? (
-            <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{summary.warnings.join(" ")}</span>
-            </div>
-          ) : null}
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 
