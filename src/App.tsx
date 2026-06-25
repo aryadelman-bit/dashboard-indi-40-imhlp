@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Database, FileSpreadsheet, Loader2 } from "lucide-react";
 import { DashboardCharts } from "@/components/DashboardCharts";
+import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { FiltersPanel } from "@/components/FiltersPanel";
 import { InsightPanel } from "@/components/InsightPanel";
 import { KbliAnalysisTab } from "@/components/KbliAnalysisTab";
@@ -21,13 +22,7 @@ import {
 import type { DashboardFilters, KbliClassificationEdit, ParsedWorkbook } from "@/types/indi";
 
 const DATASET_FILE_NAME = "indi_makanan_minuman_20260507_110017.xlsx";
-declare global {
-  interface Window {
-    __INDI_EXCEL_DATA_URL__?: string;
-  }
-}
-
-const DATASET_URL = window.__INDI_EXCEL_DATA_URL__ ?? `${import.meta.env.BASE_URL}data/${DATASET_FILE_NAME}`;
+const DATASET_URL = `${import.meta.env.BASE_URL}data/${DATASET_FILE_NAME}`;
 
 export default function App() {
   const [workbook, setWorkbook] = useState<ParsedWorkbook | null>(null);
@@ -84,6 +79,9 @@ export default function App() {
     () => calculateAggregates(filteredRecords, includeAnomalies),
     [filteredRecords, includeAnomalies]
   );
+  const yearRange = workbook?.summary.years.length
+    ? `${workbook.summary.years[0]}-${workbook.summary.years[workbook.summary.years.length - 1]}`
+    : "-";
 
   function updateKbliClassificationEdit(recordId: string, edit: KbliClassificationEdit | null) {
     const next = { ...kbliClassificationEdits };
@@ -99,17 +97,38 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-          <div className="space-y-3">
-            <Badge variant="blue">INDI 4.0 Self Assessment</Badge>
-            <div className="space-y-2">
-              <h1 className="max-w-5xl text-2xl font-semibold tracking-normal text-slate-950 md:text-3xl">
-                Dashboard Monitoring Self Assessment INDI 4.0 Industri Makanan, Hasil Laut dan Perikanan
-              </h1>
-              <p className="max-w-4xl text-sm leading-6 text-muted-foreground md:text-base">
-                Monitoring agregat skor INDI 4.0, sebaran perusahaan, klasifikasi KBLI, anomali data, serta
-                kekuatan dan kelemahan pilar transformasi industri 4.0.
-              </p>
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="blue">INDI 4.0 Self Assessment</Badge>
+                <Badge variant="outline">IMHLP</Badge>
+              </div>
+              <div className="space-y-2">
+                <h1 className="max-w-5xl text-2xl font-semibold tracking-normal text-slate-950 md:text-3xl">
+                  Dashboard Monitoring Self Assessment INDI 4.0 Industri Makanan, Hasil Laut dan Perikanan
+                </h1>
+                <p className="max-w-4xl text-sm leading-6 text-muted-foreground md:text-base">
+                  Monitoring agregat skor INDI 4.0, sebaran perusahaan, klasifikasi KBLI, anomali data, serta
+                  kekuatan dan kelemahan pilar transformasi industri 4.0.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 rounded-lg border bg-slate-50 p-2 text-center text-xs text-slate-600">
+              <div className="rounded-md bg-white px-3 py-2 shadow-sm">
+                <div className="font-semibold text-slate-950">{workbook?.summary.totalDataRows.toLocaleString("id-ID") ?? "-"}</div>
+                <div>Record SA</div>
+              </div>
+              <div className="rounded-md bg-white px-3 py-2 shadow-sm">
+                <div className="font-semibold text-slate-950">{yearRange}</div>
+                <div>Tahun data</div>
+              </div>
+              <div className="rounded-md bg-white px-3 py-2 shadow-sm">
+                <div className="font-semibold text-slate-950">
+                  {workbook?.summary.kbliReferenceCount.toLocaleString("id-ID") ?? "-"}
+                </div>
+                <div>KBLI referensi</div>
+              </div>
             </div>
           </div>
         </div>
@@ -139,6 +158,7 @@ export default function App() {
 
             <TabsContent value="dashboard" className="space-y-6">
               <KpiCards kpi={aggregate.kpi} />
+              <ExecutiveSummary aggregate={aggregate} />
               <InsightPanel insights={aggregate.insights} />
               <DashboardCharts aggregate={aggregate} />
               <CompanyTable

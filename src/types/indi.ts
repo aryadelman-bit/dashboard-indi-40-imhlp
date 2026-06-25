@@ -127,10 +127,32 @@ export interface KbliAnalysisRow {
   inIMHLP: boolean;
 }
 
+export interface DataQualityMetrics {
+  aggregationAnomalies: number;
+  anomalyData: number;
+  invalidDates: number;
+  zeroScores: number;
+  duplicates: number;
+  noKbli: number;
+  outsideKbli: number;
+  multiKbliAgro: number;
+  editedClassifications: number;
+  validShare: number;
+}
+
+export interface ActionQueue {
+  name: string;
+  count: number;
+  description: string;
+  tone: "red" | "orange" | "yellow" | "blue" | "green" | "gray";
+}
+
 export interface AggregateResult {
   sourceRecords: ParsedAssessment[];
   scoreRecords: ParsedAssessment[];
   kpi: KpiMetrics;
+  dataQuality: DataQualityMetrics;
+  actionQueues: ActionQueue[];
   yearCounts: Array<{ year: number | string; valid: number; anomaly: number; total: number }>;
   yearlyAverage: Array<{ year: number; average: number | null; count: number }>;
   scoreDistribution: ChartDatum[];

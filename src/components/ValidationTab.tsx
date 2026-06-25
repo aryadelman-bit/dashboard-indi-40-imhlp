@@ -3,11 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { exportValidationWorkbook } from "@/lib/export";
-import { getClassificationBadgeVariant } from "@/lib/indi";
+import { getClassificationBadgeVariant, isAggregationAnomaly } from "@/lib/indi";
 import { formatInteger, formatNumber } from "@/lib/utils";
 import type { ParsedAssessment } from "@/types/indi";
 
 export function ValidationTab({ records }: { records: ParsedAssessment[] }) {
+  const aggregationAnomalies = records.filter(isAggregationAnomaly);
   const anomalyData = records.filter((record) => record.anomalyData);
   const invalidDates = records.filter((record) => record.tanggalInvalid);
   const zeroScores = records.filter((record) => record.skorNol);
@@ -19,13 +20,14 @@ export function ValidationTab({ records }: { records: ParsedAssessment[] }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <ValidationMetric title="Total data anomali" value={anomalyData.length} tone="red" />
+        <ValidationMetric title="Anomali agregasi" value={aggregationAnomalies.length} tone="red" />
+        <ValidationMetric title="Anomali Data" value={anomalyData.length} tone="red" />
         <ValidationMetric title="Tanggal invalid" value={invalidDates.length} tone="orange" />
         <ValidationMetric title="Skor nol" value={zeroScores.length} tone="orange" />
         <ValidationMetric title="Duplikasi potensial" value={duplicates.length} tone="yellow" />
-        <ValidationMetric title="Semua isu data" value={issueCount} tone="red" />
         <ValidationMetric title="Data tanpa KBLI" value={noKbli.length} tone="gray" />
         <ValidationMetric title="Multi KBLI Agro" value={multiAgro.length} tone="blue" />
+        <ValidationMetric title="Semua flag data" value={issueCount} tone="red" />
       </div>
 
       <Card className="bg-white shadow-sm">

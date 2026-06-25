@@ -327,6 +327,59 @@ function buildInsights(result: Omit<AggregateResult, "insights">) {
   return insights;
 }
 
+function buildDataQuality(records: ParsedAssessment[]): AggregateResult["dataQuality"] {
+  const aggregationAnomalies = records.filter(isAggregationAnomaly).length;
+  return {
+    aggregationAnomalies,
+    anomalyData: records.filter((record) => record.anomalyData).length,
+    invalidDates: records.filter((record) => record.tanggalInvalid).length,
+    zeroScores: records.filter((record) => record.skorNol).length,
+    duplicates: records.filter((record) => record.duplikasiPotensial).length,
+    noKbli: records.filter((record) => record.kbli.codes.length === 0).length,
+    outsideKbli: records.filter((record) => record.kbli.classification === "Di Luar KBLI IMHLP").length,
+    multiKbliAgro: records.filter((record) => record.kbli.classification === "Multi KBLI Agro").length,
+    editedClassifications: records.filter((record) => record.kbliClassificationEdited).length,
+    validShare: records.length ? ((records.length - aggregationAnomalies) / records.length) * 100 : 0
+  };
+}
+
+function buildActionQueues(
+  records: ParsedAssessment[],
+  scoreRecords: ParsedAssessment[],
+  dataQuality: AggregateResult["dataQuality"]
+): AggregateResult["actionQueues"] {
+  const technologyWeak = scoreRecords.filter((record) => (record.pillarScores.Teknologi ?? 4) < 2).length;
+  const verificationReady = scoreRecords.filter((record) => (record.score ?? 0) >= 3).length;
+  const kbliNeedsAttention = dataQuality.noKbli + dataQuality.outsideKbli + dataQuality.multiKbliAgro;
+
+  return [
+    {
+      name: "Bersihkan data agregasi",
+      count: dataQuality.aggregationAnomalies,
+      description: "Skor nol atau tanggal invalid yang dipisahkan dari rata-rata resmi.",
+      tone: dataQuality.aggregationAnomalies > 0 ? "red" : "green"
+    },
+    {
+      name: "Cek klasifikasi KBLI",
+      count: kbliNeedsAttention,
+      description: "Tanpa KBLI, di luar KBLI IMHLP, atau multi KBLI Agro.",
+      tone: kbliNeedsAttention > 0 ? "orange" : "green"
+    },
+    {
+      name: "Pendampingan teknologi",
+      count: technologyWeak,
+      description: "Perusahaan valid dengan pilar Teknologi di bawah level 2.",
+      tone: technologyWeak > 0 ? "yellow" : "green"
+    },
+    {
+      name: "Kandidat verifikasi",
+      count: verificationReady,
+      description: "Perusahaan valid dengan Nilai INDI minimal 3.00.",
+      tone: verificationReady > 0 ? "blue" : "gray"
+    }
+  ];
+}
+
 export function calculateAggregates(
   sourceRecords: ParsedAssessment[],
   includeAnomalies: boolean
@@ -408,6 +461,8 @@ export function calculateAggregates(
 
   const establishmentSet = new Set(sourceRecords.map((record) => record.establishmentKey));
   const countAboveThree = scoreValues.filter((score) => score >= 3).length;
+  const dataQuality = buildDataQuality(sourceRecords);
+  const actionQueues = buildActionQueues(sourceRecords, scoreRecords, dataQuality);
 
   const scoreRecordIds = new Set(scoreRecords.map((record) => record.id));
   const kbliMap = new Map<string, { records: ParsedAssessment[]; scoreRecords: ParsedAssessment[]; companies: Set<string>; inIMHLP: boolean }>();
@@ -450,6 +505,8 @@ export function calculateAggregates(
       earliestYear: years.length ? Math.min(...years) : null,
       latestYear: years.length ? Math.max(...years) : null
     },
+    dataQuality,
+    actionQueues,
     yearCounts,
     yearlyAverage,
     scoreDistribution,
