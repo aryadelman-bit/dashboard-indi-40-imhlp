@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Database, FileSpreadsheet, Loader2 } from "lucide-react";
+import { ComparisonPanel } from "@/components/ComparisonPanel";
 import { DashboardCharts } from "@/components/DashboardCharts";
 import { DecisionVisuals } from "@/components/DecisionVisuals";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
@@ -95,6 +96,10 @@ export default function App() {
     saveKbliClassificationEdits(next);
   }
 
+  function applyQuickFilters(nextFilters: Partial<DashboardFilters>) {
+    setFilters((current) => ({ ...current, ...nextFilters }));
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b bg-white">
@@ -161,8 +166,9 @@ export default function App() {
               <KpiCards kpi={aggregate.kpi} />
               <ExecutiveSummary aggregate={aggregate} />
               <InsightPanel insights={aggregate.insights} />
-              <DecisionVisuals aggregate={aggregate} />
-              <DashboardCharts aggregate={aggregate} />
+              <ComparisonPanel records={records} filters={filters} includeAnomalies={includeAnomalies} />
+              <DecisionVisuals aggregate={aggregate} onQuickFilter={applyQuickFilters} />
+              <DashboardCharts aggregate={aggregate} onQuickFilter={applyQuickFilters} />
               <CompanyTable
                 records={filteredRecords}
                 allRecords={records}

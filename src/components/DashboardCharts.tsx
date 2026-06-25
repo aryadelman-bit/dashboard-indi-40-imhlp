@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CLASSIFICATION_COLORS } from "@/constants/indi";
 import { formatInteger, formatNumber } from "@/lib/utils";
-import type { AggregateResult, ChartDatum, ParsedAssessment } from "@/types/indi";
+import type { AggregateResult, ChartDatum, DashboardFilters, ParsedAssessment } from "@/types/indi";
 
 const MATURITY_COLORS: Record<string, string> = {
   "Sangat Awal": "#dc2626",
@@ -114,12 +114,31 @@ function YearlyAverageTooltip({
   );
 }
 
-export function DashboardCharts({ aggregate }: { aggregate: AggregateResult }) {
+function getPayload<T>(entry: unknown) {
+  if (!entry || typeof entry !== "object" || !("payload" in entry)) return null;
+  return (entry as { payload?: T }).payload ?? null;
+}
+
+function maturityFromScoreBucket(bucket: string) {
+  if (bucket === "0 - <1") return "Sangat Awal";
+  if (bucket === "1 - <2") return "Dasar";
+  if (bucket === "2 - <3") return "Berkembang";
+  if (bucket === ">=3") return "Matang";
+  return "";
+}
+
+interface DashboardChartsProps {
+  aggregate: AggregateResult;
+  onQuickFilter?: (filters: Partial<DashboardFilters>) => void;
+}
+
+export function DashboardCharts({ aggregate, onQuickFilter }: DashboardChartsProps) {
   const hasRecords = aggregate.sourceRecords.length > 0;
   const showYearAnomalyBar = aggregate.yearCounts.some((item) => item.anomaly > 0);
   const fieldData = aggregate.fieldAverages.map((item) => ({
     name: item.name,
     value: item.value ?? 0,
+    pillar: item.pillar ?? "",
     color: item.color ?? "#64748b"
   }));
   const pillarRadar = aggregate.pillarAverages.map((item) => ({
@@ -141,9 +160,27 @@ export function DashboardCharts({ aggregate }: { aggregate: AggregateResult }) {
                 <YAxis allowDecimals={false} />
                 <Tooltip formatter={(value) => formatInteger(Number(value))} />
                 <Legend />
-                <Bar dataKey="valid" name="Valid agregasi" stackId="a" fill="#2563eb" />
+                <Bar
+                  dataKey="valid"
+                  fill="#2563eb"
+                  name="Valid agregasi"
+                  onClick={(entry) => {
+                    const row = getPayload<{ year: number | string }>(entry);
+                    if (typeof row?.year === "number") onQuickFilter?.({ year: String(row.year) });
+                  }}
+                  stackId="a"
+                />
                 {showYearAnomalyBar ? (
-                  <Bar dataKey="anomaly" name="Anomali agregasi" stackId="a" fill="#dc2626" />
+                  <Bar
+                    dataKey="anomaly"
+                    fill="#dc2626"
+                    name="Anomali agregasi"
+                    onClick={(entry) => {
+                      const row = getPayload<{ year: number | string }>(entry);
+                      if (typeof row?.year === "number") onQuickFilter?.({ year: String(row.year) });
+                    }}
+                    stackId="a"
+                  />
                 ) : null}
               </BarChart>
             </ResponsiveContainer>
@@ -162,7 +199,18 @@ export function DashboardCharts({ aggregate }: { aggregate: AggregateResult }) {
                 <XAxis dataKey="year" />
                 <YAxis domain={[0, 4]} />
                 <Tooltip content={<YearlyAverageTooltip />} />
-                <Line type="monotone" dataKey="average" name="Rata-rata" stroke="#0f766e" strokeWidth={2.5} dot />
+                <Line
+                  dataKey="average"
+                  dot
+                  name="Rata-rata"
+                  onClick={(entry) => {
+                    const row = getPayload<{ year: number }>(entry);
+                    if (row?.year) onQuickFilter?.({ year: String(row.year) });
+                  }}
+                  stroke="#0f766e"
+                  strokeWidth={2.5}
+                  type="monotone"
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -180,7 +228,15 @@ export function DashboardCharts({ aggregate }: { aggregate: AggregateResult }) {
                 <XAxis dataKey="name" />
                 <YAxis allowDecimals={false} />
                 <Tooltip formatter={(value) => formatInteger(Number(value))} />
-                <Bar dataKey="value" name="Jumlah">
+                <Bar
+                  dataKey="value"
+                  name="Jumlah"
+                  onClick={(entry) => {
+                    const row = getPayload<{ name: string }>(entry);
+                    const maturity = maturityFromScoreBucket(row?.name ?? "");
+                    if (maturity) onQuickFilter?.({ maturity });
+                  }}
+                >
                   {aggregate.scoreDistribution.map((entry) => (
                     <Cell key={entry.name} fill={String(entry.color ?? "#2563eb")} />
                   ))}
@@ -200,7 +256,18 @@ export function DashboardCharts({ aggregate }: { aggregate: AggregateResult }) {
               <PieChart>
                 <Tooltip formatter={(value) => formatInteger(Number(value))} />
                 <Legend />
-                <Pie data={maturityData} dataKey="value" nameKey="name" innerRadius={64} outerRadius={96} paddingAngle={2}>
+                <Pie
+                  data={maturityData}
+                  dataKey="value"
+                  innerRadius={64}
+                  nameKey="name"
+                  onClick={(entry) => {
+                    const row = getPayload<{ name: string }>(entry) ?? (entry as { name?: string });
+                    if (row.name) onQuickFilter?.({ maturity: row.name });
+                  }}
+                  outerRadius={96}
+                  paddingAngle={2}
+                >
                   {maturityData.map((entry) => (
                     <Cell key={entry.name} fill={String(entry.color)} />
                   ))}
@@ -238,7 +305,17 @@ export function DashboardCharts({ aggregate }: { aggregate: AggregateResult }) {
               <PieChart>
                 <Tooltip formatter={(value) => formatInteger(Number(value))} />
                 <Legend />
-                <Pie data={classificationData} dataKey="value" nameKey="name" innerRadius={52} outerRadius={92}>
+                <Pie
+                  data={classificationData}
+                  dataKey="value"
+                  innerRadius={52}
+                  nameKey="name"
+                  onClick={(entry) => {
+                    const row = getPayload<{ name: string }>(entry) ?? (entry as { name?: string });
+                    if (row.name) onQuickFilter?.({ classification: row.name });
+                  }}
+                  outerRadius={92}
+                >
                   {classificationData.map((entry) => (
                     <Cell key={entry.name} fill={String(entry.color)} />
                   ))}
@@ -260,7 +337,14 @@ export function DashboardCharts({ aggregate }: { aggregate: AggregateResult }) {
                 <XAxis type="number" domain={[0, 4]} />
                 <YAxis dataKey="name" type="category" width={220} tick={{ fontSize: 12 }} />
                 <Tooltip formatter={(value) => formatNumber(Number(value))} />
-                <Bar dataKey="value" name="Rata-rata">
+                <Bar
+                  dataKey="value"
+                  name="Rata-rata"
+                  onClick={(entry) => {
+                    const row = getPayload<{ pillar: string }>(entry);
+                    if (row?.pillar) onQuickFilter?.({ weakestPillar: row.pillar });
+                  }}
+                >
                   {fieldData.map((entry) => (
                     <Cell key={entry.name} fill={entry.color} />
                   ))}

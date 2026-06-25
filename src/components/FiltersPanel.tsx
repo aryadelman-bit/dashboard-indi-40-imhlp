@@ -1,4 +1,4 @@
-import { RotateCcw, SlidersHorizontal } from "lucide-react";
+import { RotateCcw, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ export function FiltersPanel({
   const update = <K extends keyof DashboardFilters>(key: K, value: DashboardFilters[K]) => {
     onFiltersChange({ ...filters, [key]: value });
   };
+  const activeFilters = buildActiveFilters(filters);
 
   return (
     <Card className="bg-white shadow-sm">
@@ -176,7 +177,56 @@ export function FiltersPanel({
             Reset filter
           </Button>
         </div>
+
+        {activeFilters.length ? (
+          <div className="flex flex-wrap gap-2 border-t pt-4">
+            {activeFilters.map((item) => (
+              <button
+                key={item.key}
+                className="inline-flex items-center gap-2 rounded-md border bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-white"
+                onClick={() => onFiltersChange({ ...filters, ...item.clear })}
+                type="button"
+              >
+                {item.label}
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ))}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
+}
+
+function buildActiveFilters(filters: DashboardFilters) {
+  const items: Array<{ key: string; label: string; clear: Partial<DashboardFilters> }> = [];
+  if (filters.year !== "all") items.push({ key: "year", label: `Tahun: ${filters.year}`, clear: { year: "all" } });
+  if (filters.classification !== "all") {
+    items.push({
+      key: "classification",
+      label: `Klasifikasi: ${filters.classification}`,
+      clear: { classification: "all" }
+    });
+  }
+  if (filters.maturity !== "all") {
+    items.push({ key: "maturity", label: `Status: ${filters.maturity}`, clear: { maturity: "all" } });
+  }
+  if (filters.weakestPillar !== "all") {
+    items.push({
+      key: "weakestPillar",
+      label: `Pilar: ${filters.weakestPillar}`,
+      clear: { weakestPillar: "all" }
+    });
+  }
+  if (filters.scoreMin || filters.scoreMax) {
+    items.push({
+      key: "score",
+      label: `Skor: ${filters.scoreMin || "0"}-${filters.scoreMax || "4+"}`,
+      clear: { scoreMin: "", scoreMax: "" }
+    });
+  }
+  if (filters.kbli) items.push({ key: "kbli", label: `KBLI: ${filters.kbli}`, clear: { kbli: "" } });
+  if (filters.company) items.push({ key: "company", label: `Perusahaan: ${filters.company}`, clear: { company: "" } });
+  if (filters.location) items.push({ key: "location", label: `Lokasi: ${filters.location}`, clear: { location: "" } });
+  return items;
 }

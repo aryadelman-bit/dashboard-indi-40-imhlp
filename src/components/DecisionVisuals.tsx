@@ -17,7 +17,13 @@ import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn, formatInteger, formatNumber } from "@/lib/utils";
-import type { AggregateResult, InterventionPoint, InterventionPriorityBand, ProvinceAnalysisRow } from "@/types/indi";
+import type {
+  AggregateResult,
+  DashboardFilters,
+  InterventionPoint,
+  InterventionPriorityBand,
+  ProvinceAnalysisRow
+} from "@/types/indi";
 
 const PRIORITY_COLORS: Record<InterventionPriorityBand, string> = {
   "Prioritas tinggi": "#dc2626",
@@ -26,7 +32,12 @@ const PRIORITY_COLORS: Record<InterventionPriorityBand, string> = {
   "Monitoring rutin": "#2563eb"
 };
 
-export function DecisionVisuals({ aggregate }: { aggregate: AggregateResult }) {
+interface DecisionVisualsProps {
+  aggregate: AggregateResult;
+  onQuickFilter?: (filters: Partial<DashboardFilters>) => void;
+}
+
+export function DecisionVisuals({ aggregate, onQuickFilter }: DecisionVisualsProps) {
   const priorityCounts = aggregate.interventionPoints.reduce(
     (acc, point) => {
       acc[point.priorityBand] = (acc[point.priorityBand] ?? 0) + 1;
@@ -70,8 +81,8 @@ export function DecisionVisuals({ aggregate }: { aggregate: AggregateResult }) {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.35fr_1fr]">
-        <InterventionMatrix points={aggregate.interventionPoints} />
-        <ProvinceOpportunity rows={aggregate.provinceRows} />
+        <InterventionMatrix points={aggregate.interventionPoints} onQuickFilter={onQuickFilter} />
+        <ProvinceOpportunity rows={aggregate.provinceRows} onQuickFilter={onQuickFilter} />
       </div>
     </section>
   );
@@ -111,7 +122,13 @@ function SignalCard({
   );
 }
 
-function InterventionMatrix({ points }: { points: InterventionPoint[] }) {
+function InterventionMatrix({
+  points,
+  onQuickFilter
+}: {
+  points: InterventionPoint[];
+  onQuickFilter?: (filters: Partial<DashboardFilters>) => void;
+}) {
   const grouped = Object.keys(PRIORITY_COLORS).map((band) => ({
     band: band as InterventionPriorityBand,
     points: points.filter((point) => point.priorityBand === band)
@@ -161,6 +178,10 @@ function InterventionMatrix({ points }: { points: InterventionPoint[] }) {
                     data={group.points}
                     fill={PRIORITY_COLORS[group.band]}
                     name={group.band}
+                    onClick={(entry) => {
+                      const point = getPayload<InterventionPoint>(entry);
+                      if (point) onQuickFilter?.({ company: point.companyName });
+                    }}
                     opacity={0.76}
                   />
                 ))}
@@ -229,7 +250,13 @@ function formatWorkforceTick(value: number) {
   return formatInteger(actual);
 }
 
-function ProvinceOpportunity({ rows }: { rows: ProvinceAnalysisRow[] }) {
+function ProvinceOpportunity({
+  rows,
+  onQuickFilter
+}: {
+  rows: ProvinceAnalysisRow[];
+  onQuickFilter?: (filters: Partial<DashboardFilters>) => void;
+}) {
   const topRows = rows.slice(0, 12);
   const tileRows = rows.slice(0, 24);
 
@@ -248,7 +275,15 @@ function ProvinceOpportunity({ rows }: { rows: ProvinceAnalysisRow[] }) {
                 <XAxis allowDecimals={false} type="number" />
                 <YAxis dataKey="province" type="category" width={120} tick={{ fontSize: 11 }} />
                 <Tooltip content={<ProvinceTooltip />} />
-                <Bar dataKey="totalRecords" name="Record SA" radius={[0, 4, 4, 0]}>
+                <Bar
+                  dataKey="totalRecords"
+                  name="Record SA"
+                  onClick={(entry) => {
+                    const row = getPayload<ProvinceAnalysisRow>(entry);
+                    if (row) onQuickFilter?.({ location: row.province });
+                  }}
+                  radius={[0, 4, 4, 0]}
+                >
                   {topRows.map((row) => (
                     <Cell key={row.province} fill={provinceColor(row.averageScore)} />
                   ))}
@@ -262,13 +297,20 @@ function ProvinceOpportunity({ rows }: { rows: ProvinceAnalysisRow[] }) {
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {tileRows.map((row) => (
-            <div key={row.province} className={cn("rounded-md border px-3 py-2", provinceTileClass(row.averageScore))}>
+            <button
+              key={row.province}
+              aria-label={`Filter provinsi ${row.province}`}
+              className={cn("rounded-md border px-3 py-2 text-left transition hover:shadow-sm", provinceTileClass(row.averageScore))}
+              data-province-filter={row.province}
+              onClick={() => onQuickFilter?.({ location: row.province })}
+              type="button"
+            >
               <div className="line-clamp-1 text-xs font-semibold">{row.province}</div>
               <div className="mt-1 flex items-center justify-between gap-2 text-xs">
                 <span>{formatInteger(row.totalRecords)} SA</span>
                 <span>{formatNumber(row.averageScore)}</span>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </CardContent>
@@ -311,6 +353,11 @@ function provinceTileClass(value: number | null) {
   if (value < 2) return "border-orange-200 bg-orange-50 text-orange-800";
   if (value < 3) return "border-yellow-200 bg-yellow-50 text-yellow-800";
   return "border-emerald-200 bg-emerald-50 text-emerald-800";
+}
+
+function getPayload<T>(entry: unknown) {
+  if (!entry || typeof entry !== "object" || !("payload" in entry)) return null;
+  return (entry as { payload?: T }).payload ?? null;
 }
 
 function EmptyBlock() {
