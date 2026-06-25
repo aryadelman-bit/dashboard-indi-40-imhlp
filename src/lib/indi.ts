@@ -7,8 +7,10 @@ import type {
   KbliAnalysisRow,
   KbliClassification,
   KbliStats,
+  InterventionPriorityBand,
   MaturityStatus,
   ParsedAssessment,
+  ProvinceAnalysisRow,
   RankedItem
 } from "@/types/indi";
 
@@ -280,12 +282,15 @@ function buildMatrix(records: ParsedAssessment[], metrics: string[], source: "pi
 }
 
 function buildInsights(result: Omit<AggregateResult, "insights">) {
-  const insights: string[] = [];
+  const insights: AggregateResult["insights"] = [];
   const avg = result.kpi.averageScore;
   if (avg !== null) {
-    insights.push(
-      `Rata-rata Nilai INDI terfilter berada pada level ${avg.toFixed(2)} (${getMaturityStatus(avg)}).`
-    );
+    insights.push({
+      title: "Kesiapan umum",
+      metric: avg.toFixed(2),
+      tone: getMaturityBadgeVariant(getMaturityStatus(avg)),
+      body: `Rata-rata Nilai INDI terfilter berada pada level ${avg.toFixed(2)} (${getMaturityStatus(avg)}).`
+    });
   }
 
   const weakestPillar = [...result.pillarAverages]
@@ -297,31 +302,68 @@ function buildInsights(result: Omit<AggregateResult, "insights">) {
       .slice(0, 2)
       .map((field) => field.name)
       .join(" dan ");
-    insights.push(
-      `Pilar dengan skor rata-rata terendah adalah ${weakestPillar.name}; bidang yang perlu dicermati: ${weakestFields || "belum tersedia"}.`
-    );
+    insights.push({
+      title: "Kelemahan transformasi",
+      metric: weakestPillar.name,
+      tone: "orange",
+      body: `Pilar dengan skor rata-rata terendah adalah ${weakestPillar.name}; bidang yang perlu dicermati: ${weakestFields || "belum tersedia"}.`
+    });
   }
 
-  insights.push(
-    `${result.kpi.countAboveThree} perusahaan/lokasi telah mencapai Nilai INDI >= 3.00 dan dapat diprioritaskan untuk verifikasi atau pendampingan lanjutan.`
-  );
+  insights.push({
+    title: "Kandidat verifikasi",
+    metric: String(result.kpi.countAboveThree),
+    tone: result.kpi.countAboveThree > 0 ? "green" : "gray",
+    body: `${result.kpi.countAboveThree} perusahaan/lokasi telah mencapai Nilai INDI >= 3.00 dan dapat diprioritaskan untuk verifikasi atau pendampingan lanjutan.`
+  });
 
   if (result.kpi.anomalyData > 0) {
-    insights.push(
-      `Terdapat ${result.kpi.anomalyData} data yang dipisahkan dari agregasi karena Anomali Data, Skor Nol, atau Tanggal Invalid.`
-    );
+    insights.push({
+      title: "Kualitas data",
+      metric: String(result.kpi.anomalyData),
+      tone: "red",
+      body: `Terdapat ${result.kpi.anomalyData} data yang dipisahkan dari agregasi karena Anomali Data, Skor Nol, atau Tanggal Invalid.`
+    });
   }
 
   const largestClassification = [...result.classificationDistribution].sort((a, b) => b.value - a.value)[0];
   if (largestClassification) {
-    insights.push(
-      `Kategori KBLI terbesar pada data terfilter adalah ${largestClassification.name} dengan ${largestClassification.value} record.`
-    );
+    insights.push({
+      title: "Pola KBLI",
+      metric: largestClassification.name,
+      tone: "blue",
+      body: `Kategori KBLI terbesar pada data terfilter adalah ${largestClassification.name} dengan ${largestClassification.value} record.`
+    });
   }
 
   const busiestYear = [...result.yearCounts].sort((a, b) => b.total - a.total)[0];
   if (busiestYear) {
-    insights.push(`Tahun dengan jumlah Self Assessment terbanyak adalah ${busiestYear.year} (${busiestYear.total} record).`);
+    insights.push({
+      title: "Momentum tahunan",
+      metric: String(busiestYear.year),
+      tone: "blue",
+      body: `Tahun dengan jumlah Self Assessment terbanyak adalah ${busiestYear.year} (${busiestYear.total} record).`
+    });
+  }
+
+  const topProvince = result.provinceRows[0];
+  if (topProvince) {
+    insights.push({
+      title: "Sebaran wilayah",
+      metric: topProvince.province,
+      tone: "yellow",
+      body: `${topProvince.province} menjadi wilayah dengan record terbanyak (${topProvince.totalRecords} record) dan rata-rata skor ${topProvince.averageScore?.toFixed(2) ?? "-"}.`
+    });
+  }
+
+  const highPriority = result.interventionPoints.filter((point) => point.priorityBand === "Prioritas tinggi").length;
+  if (highPriority > 0) {
+    insights.push({
+      title: "Prioritas intervensi",
+      metric: String(highPriority),
+      tone: "red",
+      body: `${highPriority} perusahaan/lokasi berada pada kuadran prioritas tinggi karena skor belum kuat dan menyerap tenaga kerja relatif besar.`
+    });
   }
 
   return insights;
@@ -378,6 +420,73 @@ function buildActionQueues(
       tone: verificationReady > 0 ? "blue" : "gray"
     }
   ];
+}
+
+function buildProvinceRows(
+  sourceRecords: ParsedAssessment[],
+  scoreRecords: ParsedAssessment[]
+): ProvinceAnalysisRow[] {
+  const scoreRecordIds = new Set(scoreRecords.map((record) => record.id));
+  const provinceMap = new Map<
+    string,
+    {
+      records: ParsedAssessment[];
+      scoreRecords: ParsedAssessment[];
+      companies: Set<string>;
+    }
+  >();
+
+  sourceRecords.forEach((record) => {
+    const province = record.province || "Tidak terdeteksi";
+    const existing = provinceMap.get(province) ?? { records: [], scoreRecords: [], companies: new Set<string>() };
+    existing.records.push(record);
+    existing.companies.add(record.establishmentKey);
+    if (scoreRecordIds.has(record.id)) existing.scoreRecords.push(record);
+    provinceMap.set(province, existing);
+  });
+
+  return Array.from(provinceMap.entries())
+    .map(([province, data]) => {
+      const scores = toScoreValues(data.scoreRecords);
+      return {
+        province,
+        totalRecords: data.records.length,
+        totalCompanies: data.companies.size,
+        averageScore: average(scores),
+        anomalyCount: data.records.filter(isAggregationAnomaly).length,
+        matureCount: data.scoreRecords.filter((record) => (record.score ?? 0) >= 3).length,
+        lowScoreCount: data.scoreRecords.filter((record) => (record.score ?? 0) < 2).length
+      };
+    })
+    .sort((a, b) => b.totalRecords - a.totalRecords);
+}
+
+function getInterventionPriorityBand(record: ParsedAssessment): InterventionPriorityBand {
+  const score = record.score ?? 0;
+  const workforce = record.workforce ?? 0;
+  const technology = record.pillarScores.Teknologi;
+
+  if (score < 2 && workforce >= 100) return "Prioritas tinggi";
+  if (score < 2.5 || (technology !== null && technology < 2)) return "Pendampingan terarah";
+  if (score >= 3) return "Siap verifikasi";
+  return "Monitoring rutin";
+}
+
+function buildInterventionPoints(scoreRecords: ParsedAssessment[]): AggregateResult["interventionPoints"] {
+  return scoreRecords
+    .filter((record) => record.score !== null && record.workforce !== null && record.workforce > 0)
+    .map((record) => ({
+      id: record.id,
+      companyName: record.companyName || "-",
+      location: record.location || "-",
+      province: record.province || "Tidak terdeteksi",
+      score: record.score ?? 0,
+      workforce: record.workforce ?? 0,
+      workforceLog: Math.log10((record.workforce ?? 0) + 1),
+      technologyScore: record.pillarScores.Teknologi,
+      classification: record.kbli.classification,
+      priorityBand: getInterventionPriorityBand(record)
+    }));
 }
 
 export function calculateAggregates(
@@ -463,6 +572,8 @@ export function calculateAggregates(
   const countAboveThree = scoreValues.filter((score) => score >= 3).length;
   const dataQuality = buildDataQuality(sourceRecords);
   const actionQueues = buildActionQueues(sourceRecords, scoreRecords, dataQuality);
+  const provinceRows = buildProvinceRows(sourceRecords, scoreRecords);
+  const interventionPoints = buildInterventionPoints(scoreRecords);
 
   const scoreRecordIds = new Set(scoreRecords.map((record) => record.id));
   const kbliMap = new Map<string, { records: ParsedAssessment[]; scoreRecords: ParsedAssessment[]; companies: Set<string>; inIMHLP: boolean }>();
@@ -531,7 +642,9 @@ export function calculateAggregates(
       .filter((record) => (record.score ?? 0) >= 3)
       .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
       .slice(0, 50),
-    kbliRows
+    kbliRows,
+    provinceRows,
+    interventionPoints
   };
 
   return {

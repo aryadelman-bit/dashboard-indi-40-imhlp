@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Database, FileSpreadsheet, Loader2 } from "lucide-react";
 import { DashboardCharts } from "@/components/DashboardCharts";
+import { DecisionVisuals } from "@/components/DecisionVisuals";
 import { ExecutiveSummary } from "@/components/ExecutiveSummary";
 import { FiltersPanel } from "@/components/FiltersPanel";
 import { InsightPanel } from "@/components/InsightPanel";
@@ -160,6 +161,7 @@ export default function App() {
               <KpiCards kpi={aggregate.kpi} />
               <ExecutiveSummary aggregate={aggregate} />
               <InsightPanel insights={aggregate.insights} />
+              <DecisionVisuals aggregate={aggregate} />
               <DashboardCharts aggregate={aggregate} />
               <CompanyTable
                 records={filteredRecords}

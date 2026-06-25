@@ -127,6 +127,42 @@ export interface KbliAnalysisRow {
   inIMHLP: boolean;
 }
 
+export interface ProvinceAnalysisRow {
+  province: string;
+  totalRecords: number;
+  totalCompanies: number;
+  averageScore: number | null;
+  anomalyCount: number;
+  matureCount: number;
+  lowScoreCount: number;
+}
+
+export type InterventionPriorityBand =
+  | "Prioritas tinggi"
+  | "Pendampingan terarah"
+  | "Siap verifikasi"
+  | "Monitoring rutin";
+
+export interface InterventionPoint {
+  id: string;
+  companyName: string;
+  location: string;
+  province: string;
+  score: number;
+  workforce: number;
+  workforceLog: number;
+  technologyScore: number | null;
+  classification: KbliClassification;
+  priorityBand: InterventionPriorityBand;
+}
+
+export interface InsightItem {
+  title: string;
+  body: string;
+  tone: "blue" | "green" | "yellow" | "orange" | "red" | "gray";
+  metric?: string;
+}
+
 export interface DataQualityMetrics {
   aggregationAnomalies: number;
   anomalyData: number;
@@ -163,10 +199,12 @@ export interface AggregateResult {
   topCompanies: ParsedAssessment[];
   bottomCompanies: ParsedAssessment[];
   anomalyByType: ChartDatum[];
-  insights: string[];
+  insights: InsightItem[];
   pillarYearMatrix: Array<Record<string, string | number | null>>;
   fieldYearMatrix: Array<Record<string, string | number | null>>;
   technologyWeakestCompanies: ParsedAssessment[];
   verificationCandidates: ParsedAssessment[];
   kbliRows: KbliAnalysisRow[];
+  provinceRows: ProvinceAnalysisRow[];
+  interventionPoints: InterventionPoint[];
 }
