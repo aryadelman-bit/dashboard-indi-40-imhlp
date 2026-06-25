@@ -26,7 +26,7 @@ const INSIGHT_ICON: Record<string, typeof Lightbulb> = {
 
 export function InsightPanel({ insights }: { insights: InsightItem[] }) {
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-yellow-600" />

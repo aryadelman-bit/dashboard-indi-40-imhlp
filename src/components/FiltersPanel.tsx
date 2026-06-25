@@ -36,21 +36,21 @@ export function FiltersPanel({
   const activeFilters = buildActiveFilters(filters);
 
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <CardTitle className="flex items-center gap-2">
             <SlidersHorizontal className="h-5 w-5 text-primary" />
             Filter Dashboard
           </CardTitle>
-          <div className="flex items-center gap-3 rounded-md border bg-slate-50 px-3 py-2">
+          <div className="flex items-center gap-3 rounded-md border border-slate-200/80 bg-slate-50/80 px-3 py-2">
             <Switch checked={includeAnomalies} onCheckedChange={onIncludeAnomaliesChange} />
             <span className="text-sm font-medium">Sertakan anomali dalam agregasi</span>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4">
           <div className="space-y-2">
             <Label>Tahun SA</Label>
             <Select value={filters.year} onValueChange={(value) => update("year", value)}>
@@ -120,7 +120,7 @@ export function FiltersPanel({
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4">
           <div className="space-y-2">
             <Label>Rentang skor INDI</Label>
             <div className="grid grid-cols-2 gap-2">

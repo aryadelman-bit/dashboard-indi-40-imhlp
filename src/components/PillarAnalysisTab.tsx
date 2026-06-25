@@ -33,7 +33,7 @@ export function PillarAnalysisTab({ aggregate }: { aggregate: AggregateResult })
 
 function RankingCard({ title, items }: { title: string; items: RankedItem[] }) {
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />
@@ -78,7 +78,7 @@ function RankingCard({ title, items }: { title: string; items: RankedItem[] }) {
 function MatrixCard({ title, rows }: { title: string; rows: Array<Record<string, string | number | null>> }) {
   const years = rows.length ? Object.keys(rows[0]).filter((key) => key !== "name") : [];
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-3">
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -127,7 +127,7 @@ function CompanyListCard({
   mode: "technology" | "score";
 }) {
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           <Award className="h-5 w-5 text-emerald-700" />

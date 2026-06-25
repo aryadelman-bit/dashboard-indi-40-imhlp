@@ -30,7 +30,7 @@ export function ValidationTab({ records }: { records: ParsedAssessment[] }) {
         <ValidationMetric title="Semua flag data" value={issueCount} tone="red" />
       </div>
 
-      <Card className="bg-white shadow-sm">
+      <Card className="bg-white/95">
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -74,7 +74,7 @@ function ValidationMetric({
   }[tone];
 
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardContent className="flex items-center justify-between p-4">
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>

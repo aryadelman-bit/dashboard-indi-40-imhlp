@@ -80,7 +80,7 @@ export function DecisionVisuals({ aggregate, onQuickFilter }: DecisionVisualsPro
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.35fr_1fr]">
+      <div className="grid gap-4 xl:grid-cols-[1.35fr_1fr] 2xl:grid-cols-[1.6fr_1fr]">
         <InterventionMatrix points={aggregate.interventionPoints} onQuickFilter={onQuickFilter} />
         <ProvinceOpportunity rows={aggregate.provinceRows} onQuickFilter={onQuickFilter} />
       </div>
@@ -109,7 +109,7 @@ function SignalCard({
   }[tone];
 
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardContent className="flex min-h-28 items-start justify-between gap-3 p-4">
         <div className="min-w-0">
           <p className="text-sm text-muted-foreground">{title}</p>
@@ -135,7 +135,7 @@ function InterventionMatrix({
   }));
 
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-2">
         <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
           <div>
@@ -149,7 +149,7 @@ function InterventionMatrix({
       </CardHeader>
       <CardContent>
         {points.length ? (
-          <div className="h-[430px]">
+          <div className="h-[430px] 2xl:h-[480px]">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 10, right: 18, bottom: 18, left: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -261,14 +261,14 @@ function ProvinceOpportunity({
   const tileRows = rows.slice(0, 24);
 
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-2">
         <CardTitle>Sebaran Wilayah & Kualitas Skor</CardTitle>
         <p className="text-sm text-muted-foreground">Provinsi dengan volume SA terbesar dan warna berdasarkan rata-rata skor.</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {topRows.length ? (
-          <div className="h-72">
+          <div className="h-72 2xl:h-[330px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topRows} layout="vertical" margin={{ left: 8, right: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />

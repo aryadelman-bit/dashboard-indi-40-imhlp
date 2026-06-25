@@ -45,7 +45,7 @@ export function KbliAnalysisTab({ aggregate }: { aggregate: AggregateResult }) {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <Card className="bg-white shadow-sm">
+        <Card className="bg-white/95">
           <CardHeader className="pb-3">
             <CardTitle>Jumlah perusahaan berdasarkan KBLI</CardTitle>
           </CardHeader>
@@ -68,7 +68,7 @@ export function KbliAnalysisTab({ aggregate }: { aggregate: AggregateResult }) {
           </CardContent>
         </Card>
 
-        <Card className="bg-white shadow-sm">
+        <Card className="bg-white/95">
           <CardHeader className="pb-3">
             <CardTitle>Komposisi klasifikasi KBLI</CardTitle>
           </CardHeader>
@@ -99,7 +99,7 @@ export function KbliAnalysisTab({ aggregate }: { aggregate: AggregateResult }) {
         <KbliRankCard title="KBLI dengan rata-rata skor INDI terendah" rows={lowestAverage} />
       </div>
 
-      <Card className="bg-white shadow-sm">
+      <Card className="bg-white/95">
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -132,7 +132,7 @@ function Metric({
   score?: boolean;
 }) {
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardContent className="p-4">
         <p className="text-sm text-muted-foreground">{title}</p>
         <p className="mt-2 text-2xl font-semibold">{score ? formatNumber(value) : formatInteger(value ?? 0)}</p>
@@ -144,7 +144,7 @@ function Metric({
 
 function KbliRankCard({ title, rows }: { title: string; rows: KbliAnalysisRow[] }) {
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-3">
         <CardTitle>{title}</CardTitle>
       </CardHeader>

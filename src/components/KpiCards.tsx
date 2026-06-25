@@ -32,24 +32,34 @@ function KpiCard({
   icon: ReactNode;
 }) {
   const toneClass = {
-    slate: "bg-slate-50 text-slate-700",
-    blue: "bg-blue-50 text-blue-700",
-    green: "bg-emerald-50 text-emerald-700",
-    yellow: "bg-yellow-50 text-yellow-700",
-    orange: "bg-orange-50 text-orange-700",
-    red: "bg-red-50 text-red-700",
-    gray: "bg-slate-50 text-slate-700"
+    slate: "bg-slate-50 text-slate-700 ring-slate-200",
+    blue: "bg-blue-50 text-blue-700 ring-blue-200",
+    green: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+    yellow: "bg-yellow-50 text-yellow-700 ring-yellow-200",
+    orange: "bg-orange-50 text-orange-700 ring-orange-200",
+    red: "bg-red-50 text-red-700 ring-red-200",
+    gray: "bg-slate-50 text-slate-700 ring-slate-200"
+  }[tone];
+  const accentClass = {
+    slate: "from-slate-300",
+    blue: "from-blue-500",
+    green: "from-emerald-500",
+    yellow: "from-yellow-500",
+    orange: "from-orange-500",
+    red: "from-red-500",
+    gray: "from-slate-400"
   }[tone];
 
   return (
-    <Card className="bg-white shadow-sm">
-      <CardContent className="flex min-h-28 items-start justify-between gap-3 p-4">
+    <Card className="group relative overflow-hidden bg-white/95">
+      <div className={cn("absolute inset-x-0 top-0 h-1 bg-gradient-to-r to-transparent", accentClass)} />
+      <CardContent className="flex min-h-28 items-start justify-between gap-3 p-4 pt-5">
         <div className="min-w-0">
           <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">{value}</p>
+          <p className="mt-2 text-2xl font-semibold tracking-normal text-slate-950 xl:text-[1.7rem]">{value}</p>
           {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
         </div>
-        <div className={cn("rounded-md p-2", toneClass)}>{icon}</div>
+        <div className={cn("rounded-md p-2 ring-1", toneClass)}>{icon}</div>
       </CardContent>
     </Card>
   );
@@ -60,7 +70,7 @@ export function KpiCards({ kpi }: KpiCardsProps) {
   const avgTone = getMaturityBadgeVariant(avgStatus);
 
   return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       <KpiCard title="Total record SA" value={formatInteger(kpi.totalRecords)} icon={<Sigma className="h-5 w-5" />} />
       <KpiCard
         title="Perusahaan + lokasi unik"

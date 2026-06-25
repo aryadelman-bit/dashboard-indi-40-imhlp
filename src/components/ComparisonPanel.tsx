@@ -58,7 +58,7 @@ export function ComparisonPanel({ records, filters, includeAnomalies }: Comparis
   }, [filters, includeAnomalies, left, mode, records, right]);
 
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -187,7 +187,7 @@ function DeltaMetric({
   const valueFormat = integer ? formatInteger : formatNumber;
 
   return (
-    <div className="rounded-lg border bg-slate-50 p-4">
+    <div className="rounded-lg border border-slate-200/80 bg-slate-50/80 p-4">
       <div className="text-sm font-medium text-muted-foreground">{label}</div>
       <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <MetricValue label={leftLabel} value={valueFormat(left)} />
@@ -237,7 +237,7 @@ function PillarComparison({
           const leftValue = left.pillarAverages.find((item) => item.name === pillar.name)?.value ?? null;
           const rightValue = right.pillarAverages.find((item) => item.name === pillar.name)?.value ?? null;
           return (
-            <div key={pillar.name} className="grid gap-3 px-4 py-3 text-sm lg:grid-cols-[190px_1fr_1fr_90px] lg:items-center">
+            <div key={pillar.name} className="grid gap-3 px-4 py-3 text-sm lg:grid-cols-[190px_1fr_1fr_90px] lg:items-center 2xl:grid-cols-[240px_1fr_1fr_110px]">
               <div className="font-medium text-slate-900">{pillar.name}</div>
               <PillarBar label={leftLabel} value={leftValue} color={pillar.color} />
               <PillarBar label={rightLabel} value={rightValue} color={pillar.color} />

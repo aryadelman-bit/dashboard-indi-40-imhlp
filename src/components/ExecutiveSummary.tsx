@@ -29,8 +29,8 @@ export function ExecutiveSummary({ aggregate }: { aggregate: AggregateResult }) 
   const validShare = aggregate.dataQuality.validShare;
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-      <Card className="bg-white shadow-sm">
+    <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr] 2xl:grid-cols-[1.65fr_0.95fr]">
+      <Card className="bg-white/95">
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
             <div>
@@ -70,7 +70,7 @@ export function ExecutiveSummary({ aggregate }: { aggregate: AggregateResult }) 
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-            <div className="rounded-lg border bg-slate-50 p-4">
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/80 p-4">
               <h3 className="text-sm font-semibold text-slate-900">Komposisi kematangan</h3>
               <div className="mt-4 space-y-3">
                 {aggregate.maturityComposition.map((item) => (
@@ -85,7 +85,7 @@ export function ExecutiveSummary({ aggregate }: { aggregate: AggregateResult }) 
               </div>
             </div>
 
-            <div className="rounded-lg border bg-slate-50 p-4">
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/80 p-4">
               <h3 className="text-sm font-semibold text-slate-900">Bidang prioritas pendampingan</h3>
               <div className="mt-3 space-y-2">
                 {weakestFields.map((item, index) => (
@@ -105,7 +105,7 @@ export function ExecutiveSummary({ aggregate }: { aggregate: AggregateResult }) 
         </CardContent>
       </Card>
 
-      <Card className="bg-white shadow-sm">
+      <Card className="bg-white/95">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-emerald-700" />

@@ -101,9 +101,9 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen">
+      <header className="border-b border-slate-200/80 bg-white/90 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur">
+        <div className="dashboard-container py-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -111,26 +111,28 @@ export default function App() {
                 <Badge variant="outline">IMHLP</Badge>
               </div>
               <div className="space-y-2">
-                <h1 className="max-w-5xl text-2xl font-semibold tracking-normal text-slate-950 md:text-3xl">
+                <h1 className="max-w-6xl text-2xl font-semibold tracking-normal text-slate-950 md:text-3xl xl:text-4xl">
                   Dashboard Monitoring Self Assessment INDI 4.0 Industri Makanan, Hasil Laut dan Perikanan
                 </h1>
-                <p className="max-w-4xl text-sm leading-6 text-muted-foreground md:text-base">
+                <p className="max-w-5xl text-sm leading-6 text-muted-foreground md:text-base">
                   Monitoring agregat skor INDI 4.0, sebaran perusahaan, klasifikasi KBLI, anomali data, serta
                   kekuatan dan kelemahan pilar transformasi industri 4.0.
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-2 rounded-lg border bg-slate-50 p-2 text-center text-xs text-slate-600">
-              <div className="rounded-md bg-white px-3 py-2 shadow-sm">
-                <div className="font-semibold text-slate-950">{workbook?.summary.totalDataRows.toLocaleString("id-ID") ?? "-"}</div>
+            <div className="grid min-w-full grid-cols-3 gap-2 rounded-lg border border-slate-200/80 bg-slate-50/80 p-2 text-center text-xs text-slate-600 shadow-inner lg:min-w-[520px]">
+              <div className="rounded-md border border-slate-100 bg-white px-3 py-3 shadow-sm">
+                <div className="text-base font-semibold text-slate-950">
+                  {workbook?.summary.totalDataRows.toLocaleString("id-ID") ?? "-"}
+                </div>
                 <div>Record SA</div>
               </div>
-              <div className="rounded-md bg-white px-3 py-2 shadow-sm">
-                <div className="font-semibold text-slate-950">{yearRange}</div>
+              <div className="rounded-md border border-slate-100 bg-white px-3 py-3 shadow-sm">
+                <div className="text-base font-semibold text-slate-950">{yearRange}</div>
                 <div>Tahun data</div>
               </div>
-              <div className="rounded-md bg-white px-3 py-2 shadow-sm">
-                <div className="font-semibold text-slate-950">
+              <div className="rounded-md border border-slate-100 bg-white px-3 py-3 shadow-sm">
+                <div className="text-base font-semibold text-slate-950">
                   {workbook?.summary.kbliReferenceCount.toLocaleString("id-ID") ?? "-"}
                 </div>
                 <div>KBLI referensi</div>
@@ -140,14 +142,14 @@ export default function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <main className="dashboard-container space-y-7 py-7">
         {loadStatus === "loading" ? (
           <LoadingState />
         ) : loadStatus === "error" || !workbook ? (
           <ErrorState error={loadError} />
         ) : (
-          <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList>
+          <Tabs defaultValue="dashboard" className="space-y-7">
+            <TabsList className="w-full gap-1 overflow-x-auto">
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               <TabsTrigger value="validasi">Validasi Data</TabsTrigger>
               <TabsTrigger value="pilar">Analisis Pilar & Bidang</TabsTrigger>
@@ -196,7 +198,7 @@ export default function App() {
 
 function LoadingState() {
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardContent className="flex min-h-[420px] flex-col items-center justify-center gap-4 p-8 text-center">
         <div className="rounded-lg bg-blue-50 p-4 text-blue-700">
           <Loader2 className="h-10 w-10 animate-spin" />
@@ -222,7 +224,7 @@ function LoadingState() {
 
 function ErrorState({ error }: { error: string }) {
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardContent className="flex min-h-[420px] flex-col items-center justify-center gap-4 p-8 text-center">
         <div className="rounded-lg bg-red-50 p-4 text-red-700">
           <FileSpreadsheet className="h-10 w-10" />

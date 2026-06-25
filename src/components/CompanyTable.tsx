@@ -64,7 +64,7 @@ export function CompanyTable({ records, allRecords, onKbliClassificationEditChan
   };
 
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-white/95">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <CardTitle>Tabel Detail Perusahaan</CardTitle>

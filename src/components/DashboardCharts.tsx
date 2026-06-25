@@ -22,7 +22,7 @@ import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CLASSIFICATION_COLORS } from "@/constants/indi";
-import { formatInteger, formatNumber } from "@/lib/utils";
+import { cn, formatInteger, formatNumber } from "@/lib/utils";
 import type { AggregateResult, ChartDatum, DashboardFilters, ParsedAssessment } from "@/types/indi";
 
 const MATURITY_COLORS: Record<string, string> = {
@@ -42,7 +42,7 @@ function ChartCard({
   className?: string;
 }) {
   return (
-    <Card className={className}>
+    <Card className={cn("bg-white/95", className)}>
       <CardHeader className="pb-2">
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -149,7 +149,7 @@ export function DashboardCharts({ aggregate, onQuickFilter }: DashboardChartsPro
   const classificationData = coloredPieData(aggregate.classificationDistribution, CLASSIFICATION_COLORS);
 
   return (
-    <section className="grid gap-4 xl:grid-cols-2">
+    <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
       <ChartCard title="Tren jumlah SA per tahun">
         {hasRecords ? (
           <div className="h-72">
@@ -365,7 +365,7 @@ export function DashboardCharts({ aggregate, onQuickFilter }: DashboardChartsPro
         <RankingTable records={aggregate.bottomCompanies} direction="bottom" />
       </ChartCard>
 
-      <ChartCard title="Grafik anomali berdasarkan jenis" className="xl:col-span-2">
+      <ChartCard title="Grafik anomali berdasarkan jenis" className="xl:col-span-2 2xl:col-span-3">
         {aggregate.anomalyByType.some((item) => item.value > 0) ? (
           <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
             <div className="h-72">
